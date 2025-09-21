@@ -11,20 +11,20 @@ const ORIGIN = process.env.ORIGIN || '*';
 
 const app = express();
 
-// middleware
+
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({ origin: ORIGIN }));
 
-// простой rate limiter (защита от спама)
+
 const limiter = rateLimit({
-    windowMs: 60 * 1000, // 1 минута
-    max: 10, // максимум 10 запросов за минуту
+    windowMs: 60 * 1000,
+    max: 10,
 });
 app.use(limiter);
 
-// валидация тела запроса
+
 const validateBody = ({ name, email, phone, interest, message }) => {
     if (!name || name.trim().length < 3) return { ok: false, field: 'name' };
     const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -39,7 +39,6 @@ const validateBody = ({ name, email, phone, interest, message }) => {
 let transporter;
 let isTestAccount = false;
 
-// инициализация почтового транспорта (либо реальные SMTP из .env, либо Ethereal)
 async function initMailer() {
     if (process.env.SMTP_USER && process.env.SMTP_PASS && process.env.SMTP_HOST) {
         transporter = nodemailer.createTransport({
@@ -51,11 +50,9 @@ async function initMailer() {
                 pass: process.env.SMTP_PASS
             }
         });
-        // проверяем подключение к SMTP (если не работает — будет ошибка)
         await transporter.verify();
         console.log('✅ SMTP transporter ready (production)');
     } else {
-        // если SMTP не настроен — используем Ethereal (тестовый сервис, письма не уходят в реальные почтовики)
         const testAccount = await nodemailer.createTestAccount();
         transporter = nodemailer.createTransport({
             host: 'smtp.ethereal.email',
@@ -71,14 +68,13 @@ async function initMailer() {
     }
 }
 
-// API endpoint
+
 app.post('/api/contact', async (req, res) => {
     try {
         const { name, email, phone, interest, message } = req.body;
         const v = validateBody({ name, email, phone, interest, message });
         if (!v.ok) return res.status(400).json({ ok: false, error: 'validation_failed', field: v.field });
 
-        // формируем тело письма
         const html = `
       <h3>New contact form submission</h3>
       <p><b>Name:</b> ${name}</p>
@@ -97,7 +93,6 @@ app.post('/api/contact', async (req, res) => {
 
         const info = await transporter.sendMail(mailOptions);
 
-        // если это Ethereal — возвращаем preview URL для удобной локальной проверки
         const previewUrl = isTestAccount ? nodemailer.getTestMessageUrl(info) : null;
 
         return res.json({ ok: true, message: 'Email sent', previewUrl });
@@ -107,14 +102,12 @@ app.post('/api/contact', async (req, res) => {
     }
 });
 
-// (опционально) отдача статического фронта в production
 if (process.env.NODE_ENV === 'production') {
-    const clientDist = path.join(__dirname, 'client', 'dist'); // настрой под свою сборку
+    const clientDist = path.join(__dirname, 'client', 'dist');
     app.use(express.static(clientDist));
-    app.get('*', (req, res) => res.sendFile(path.join(clientDist, 'index.html')));
+    app.get('/*', (req, res) => res.sendFile(path.join(clientDist, 'index.html')));
 }
 
-// запускаем инициализацию почты, затем сервер
 initMailer()
     .then(() => {
         app.listen(PORT, () => {
