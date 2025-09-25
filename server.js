@@ -14,7 +14,7 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// CORS - разрешаем ваш домен
+// CORS
 app.use(cors({
   origin: [
     'https://imec-school.com',
@@ -31,12 +31,12 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Health check
+// Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'IMEC Backend is running' });
 });
 
-// Валидация (УБИРАЕМ проверку message - она не обязательна)
+// Валидация
 const validateBody = ({ name, email, phone, interest }) => {
   if (!name || name.trim().length < 3) return { ok: false, field: "name" };
   const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -66,11 +66,6 @@ async function initMailer() {
     try {
       await transporter.verify();
       console.log('✅ SMTP transporter ready (production)');
-      console.log('SMTP Config:', {
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        user: process.env.SMTP_USER
-      });
     } catch (error) {
       console.error('❌ SMTP verification failed:', error);
       throw error;
@@ -84,11 +79,10 @@ async function initMailer() {
 // Contact form endpoint
 app.post("/contacts/", async (req, res) => {
   try {
-    console.log('Received contact form data:', req.body);
+    console.log('Received contact form data');
 
     const { name, email, phone, interest, message } = req.body;
 
-    // Валидация (message не обязателен)
     const v = validateBody({ name, email, phone, interest });
     if (!v.ok) {
       return res.status(400).json({
@@ -98,7 +92,6 @@ app.post("/contacts/", async (req, res) => {
       });
     }
 
-    // HTML письма
     const html = `
             <h3>New contact form submission from IMEC School</h3>
             <p><strong>Name:</strong> ${name}</p>
@@ -106,8 +99,6 @@ app.post("/contacts/", async (req, res) => {
             <p><strong>Phone:</strong> ${phone}</p>
             <p><strong>Interest:</strong> ${interest}</p>
             <p><strong>Message:</strong> ${message || 'No message provided'}</p>
-            <hr>
-            <p><small>Sent from IMEC School website</small></p>
         `;
 
     const mailOptions = {
@@ -140,18 +131,12 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
-});
-
 // Initialize and start server
 initMailer()
     .then(() => {
-      app.listen(PORT, () => {
+      app.listen(PORT, '0.0.0.0', () => {
         console.log(`🚀 Server running on port ${PORT}`);
-        console.log(`📍 Health check: /health`);
+        console.log(`📍 Health check available`);
       });
     })
     .catch((err) => {
