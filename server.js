@@ -221,7 +221,7 @@ app.get('/', (req, res) => {
 });
 
 // 404 handler
-app.use('*', (req, res) => {
+app.use((req, res) => {
     res.status(404).json({
         ok: false,
         error: 'endpoint_not_found',
@@ -235,6 +235,7 @@ app.use('*', (req, res) => {
         }
     });
 });
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {
