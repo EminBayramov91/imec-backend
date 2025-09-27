@@ -11,21 +11,18 @@ const ORIGIN = process.env.ORIGIN || "*";
 
 const app = express();
 
-// Middleware
 app.use(helmet());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cors({ origin: ORIGIN }));
 
-// Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   message: { ok: false, error: "too_many_requests" },
 });
 app.use(limiter);
 
-// Validation function
 const validateBody = ({ name, email, phone, interest, message }) => {
   if (!name || name.trim().length < 2)
     return {
@@ -45,19 +42,12 @@ const validateBody = ({ name, email, phone, interest, message }) => {
     };
   if (!interest || interest.trim() === "")
     return { ok: false, field: "interest", message: "Interest is required" };
-  if (!message || message.trim().length < 10)
-    return {
-      ok: false,
-      field: "message",
-      message: "Message must be at least 10 characters",
-    };
   return { ok: true };
 };
 
 let transporter;
 let isTestAccount = false;
 
-// Mailer initialization
 async function initMailer() {
   if (process.env.SMTP_USER && process.env.SMTP_PASS && process.env.SMTP_HOST) {
     transporter = nodemailer.createTransport({
@@ -92,9 +82,6 @@ async function initMailer() {
   }
 }
 
-// ==================== ROUTES ====================
-
-// Health check endpoint
 app.get("/api/health", (req, res) => {
   res.json({
     status: "ok",
@@ -104,7 +91,6 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Server info endpoint
 app.get("/api/info", (req, res) => {
   res.json({
     ok: true,
@@ -119,7 +105,6 @@ app.get("/api/info", (req, res) => {
   });
 });
 
-// Contact form GET endpoint (for testing)
 app.get("/api/contact", (req, res) => {
   res.json({
     ok: true,
@@ -141,12 +126,10 @@ app.get("/api/contact", (req, res) => {
   });
 });
 
-// Main contact form POST endpoint
 app.post("/api/contact", async (req, res) => {
   try {
     const { name, email, phone, interest, message } = req.body;
 
-    // Validation
     const v = validateBody({ name, email, phone, interest, message });
     if (!v.ok) {
       return res.status(400).json({
@@ -157,7 +140,6 @@ app.post("/api/contact", async (req, res) => {
       });
     }
 
-    // Email content
     const html = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h2 style="color: #333; border-bottom: 2px solid #007cba; padding-bottom: 10px;">
@@ -229,7 +211,6 @@ Sent from IMEC School website
   }
 });
 
-// Root endpoint
 app.get("/", (req, res) => {
   res.json({
     ok: true,
@@ -244,7 +225,6 @@ app.get("/", (req, res) => {
   });
 });
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     ok: false,
@@ -260,7 +240,6 @@ app.use((req, res) => {
   });
 });
 
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error("❌ Server error:", err);
   res.status(500).json({
@@ -270,9 +249,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ==================== SERVER STARTUP ====================
 
-// Initialize mailer and start server
 initMailer()
   .then(() => {
     app.listen(PORT, "127.0.0.1", () => {
