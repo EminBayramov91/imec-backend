@@ -78,7 +78,7 @@ async function initMailer() {
     });
     isTestAccount = true;
     console.log(
-      "⚠️ Using Ethereal test account. Preview URLs will be available for sent emails."
+        "⚠️ Using Ethereal test account. Preview URLs will be available for sent emails."
     );
   }
 }
@@ -179,27 +179,76 @@ Sent from IMEC School website
 
     const mailOptions = {
       from:
-        process.env.SMTP_FROM ||
-        process.env.SMTP_USER ||
-        "no-reply@imec-school.com",
+          process.env.SMTP_FROM ||
+          process.env.SMTP_USER ||
+          "no-reply@imec-school.com",
       to:
-        process.env.TO_EMAIL || process.env.SMTP_USER || "imec@imec-school.com",
+          process.env.TO_EMAIL || process.env.SMTP_USER || "imec@imec-school.com",
       subject: `New Contact from IMEC Website - ${name}`,
       html,
       text,
     };
 
+    // Отправляем основное письмо администратору
     const info = await transporter.sendMail(mailOptions);
+
+    // Отправляем автоответ пользователю
+    const autoReplyOptions = {
+      from: `"IMEC" <${process.env.SMTP_FROM || process.env.SMTP_USER || "no-reply@imec-school.com"}>`,
+      to: email,
+      subject: "Thank you for contacting IMEC!",
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #007cba, #2b5dff); padding: 30px; text-align: center; color: white;">
+            <h1 style="margin: 0; font-size: 28px;">Thank You!</h1>
+            <p style="margin: 10px 0 0; font-size: 16px; opacity: 0.9;">We have received your message</p>
+          </div>
+          <div style="padding: 30px; background: #f9f9f9;">
+            <p>Dear <b style="color: #2b5dff;">${name}</b>,</p>
+            <p>Thank you for reaching out and for your interest in our <b style="color: #2b5dff;">${interest}</b> program.</p>
+            <p>We have received your message and our team will review it carefully. We'll get back to you as soon as possible, usually within 24-48 hours.</p>
+            <br>
+            <p>Here's a summary of your inquiry:</p>
+            <div style="background: white; padding: 20px; border-radius: 5px; border-left: 4px solid #2b5dff; margin: 15px 0;">
+              <p><strong>Name:</strong> ${name}</p>
+              <p><strong>Email:</strong> ${email}</p>
+              <p><strong>Phone:</strong> ${phone}</p>
+              <p><strong>Interest:</strong> ${interest}</p>
+              <p><strong>Your Message:</strong></p>
+              <div style="background: #f8f9fa; padding: 15px; border-radius: 3px; margin-top: 10px;">
+                ${message.replace(/\n/g, "<br>")}
+              </div>
+            </div>
+            <p>If you have any urgent questions, feel free to reply to this email.</p>
+            <br>
+            <p>Best regards,</p>
+            <p><b style="color: #2b5dff;">IMEC Team</b><br>
+            <a href="https://imec-school.com" style="color: #2b5dff; text-decoration: none;">imec-school.com</a></p>
+          </div>
+          <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 12px;">
+            <p>This is an automated response. Please do not reply to this email.</p>
+            <p>&copy; ${new Date().getFullYear()} IMEC School. All rights reserved.</p>
+          </div>
+        </div>
+      `,
+    };
+
+    const autoReplyInfo = await transporter.sendMail(autoReplyOptions);
     const previewUrl = isTestAccount
-      ? nodemailer.getTestMessageUrl(info)
-      : null;
+        ? nodemailer.getTestMessageUrl(info)
+        : null;
+    const autoReplyPreviewUrl = isTestAccount
+        ? nodemailer.getTestMessageUrl(autoReplyInfo)
+        : null;
 
     console.log(`✅ Contact form submitted: ${name} <${email}>`);
+    console.log(`✅ Auto-reply sent to: ${email}`);
 
     return res.json({
       ok: true,
       message: "Email sent successfully",
       previewUrl,
+      autoReplyPreviewUrl,
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
@@ -250,23 +299,22 @@ app.use((err, req, res, next) => {
   });
 });
 
-
 initMailer()
-  .then(() => {
-    app.listen(PORT, "127.0.0.1", () => {
-      console.log(
-        `🚀 Server running on port ${PORT} (accessible from outside)`
-      );
-      console.log(
-        `📧 Mailer mode: ${isTestAccount ? "TEST (Ethereal)" : "PRODUCTION"}`
-      );
-      console.log(`🌐 CORS origin: ${ORIGIN}`);
-      console.log(`⏰ Started at: ${new Date().toISOString()}`);
+    .then(() => {
+      app.listen(PORT, "127.0.0.1", () => {
+        console.log(
+            `🚀 Server running on port ${PORT} (accessible from outside)`
+        );
+        console.log(
+            `📧 Mailer mode: ${isTestAccount ? "TEST (Ethereal)" : "PRODUCTION"}`
+        );
+        console.log(`🌐 CORS origin: ${ORIGIN}`);
+        console.log(`⏰ Started at: ${new Date().toISOString()}`);
+      });
+    })
+    .catch((err) => {
+      console.error("❌ Mailer init failed:", err);
+      process.exit(1);
     });
-  })
-  .catch((err) => {
-    console.error("❌ Mailer init failed:", err);
-    process.exit(1);
-  });
 
 module.exports = app;
