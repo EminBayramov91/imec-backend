@@ -194,7 +194,7 @@ Sent from IMEC School website
             <h1 style="margin: 0; font-size: 28px;">Thank You!</h1>
             <p style="margin: 10px 0 0; font-size: 16px; opacity: 0.9;">We have received your message</p>
           </div>
-          <div style="padding: 30px; background: #f9f9f9;">
+          <div style="padding: 30px; background: #f9f9f9; color: #000000;">
             <p>Dear <b style="color: #2b5dff;">${name}</b>,</p>
             <p>Thank you for reaching out and for your interest in our <b style="color: #2b5dff;">${interest}</b> program.</p>
             <p>Here we have provided more detailed information about ${interest} lesson.:</p>
