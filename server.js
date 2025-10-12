@@ -116,14 +116,7 @@ app.get("/api/contact", (req, res) => {
       phone: "international format (e.g., +1234567890)",
       interest: "string",
       message: "string (min 10 chars)",
-    },
-    example: {
-      name: "John Doe",
-      email: "john@example.com",
-      phone: "+1234567890",
-      interest: "Course Information",
-      message: "I'm interested in learning more about your courses",
-    },
+    }
   });
 });
 
@@ -189,43 +182,35 @@ Sent from IMEC School website
       text,
     };
 
-    // Отправляем основное письмо администратору
     const info = await transporter.sendMail(mailOptions);
 
-    // Отправляем автоответ пользователю
     const autoReplyOptions = {
       from: `"IMEC" <${process.env.SMTP_FROM || process.env.SMTP_USER || "no-reply@imec-school.com"}>`,
       to: email,
       subject: "Thank you for contacting IMEC!",
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: 0 auto;">
-          <div style="background: linear-gradient(135deg, #007cba, #2b5dff); padding: 30px; text-align: center; color: white;">
+          <div style="background: #1D2943; padding: 30px; text-align: center; color: white;">
             <h1 style="margin: 0; font-size: 28px;">Thank You!</h1>
             <p style="margin: 10px 0 0; font-size: 16px; opacity: 0.9;">We have received your message</p>
           </div>
           <div style="padding: 30px; background: #f9f9f9;">
             <p>Dear <b style="color: #2b5dff;">${name}</b>,</p>
             <p>Thank you for reaching out and for your interest in our <b style="color: #2b5dff;">${interest}</b> program.</p>
-            <p>We have received your message and our team will review it carefully. We'll get back to you as soon as possible, usually within 24-48 hours.</p>
-            <br>
-            <p>Here's a summary of your inquiry:</p>
-            <div style="background: white; padding: 20px; border-radius: 5px; border-left: 4px solid #2b5dff; margin: 15px 0;">
-              <p><strong>Name:</strong> ${name}</p>
-              <p><strong>Email:</strong> ${email}</p>
-              <p><strong>Phone:</strong> ${phone}</p>
-              <p><strong>Interest:</strong> ${interest}</p>
-              <p><strong>Your Message:</strong></p>
-              <div style="background: #f8f9fa; padding: 15px; border-radius: 3px; margin-top: 10px;">
-                ${message.replace(/\n/g, "<br>")}
-              </div>
+            <p>Here we have provided more detailed information about ${interest} lesson.:</p>
+            <div style="background: white; padding: 20px; border-radius: 5px; border-left: 4px solid #1D2943; margin: 15px 0;">
+              <p><strong>Trial lesson:</strong> Contact us to schedule your trial lesson</p>
+              <p><strong>Individual Lessons:</strong> 8 lessons for 250 AZN</p>
+              <p><strong>Group Lessons:</strong> 8 lessons for 200 AZN</p>
+              <p><strong>Lesson Duration:</strong> 50 minutes per lesson</p>
+              <p><strong>Contact Us:</strong> <a href="tel:+994103192021" style="color: #1D2943; text-decoration: none;">+994103192021</a> Call or WhatsApp</p>
             </div>
-            <p>If you have any urgent questions, feel free to reply to this email.</p>
             <br>
             <p>Best regards,</p>
-            <p><b style="color: #2b5dff;">IMEC Team</b><br>
-            <a href="https://imec-school.com" style="color: #2b5dff; text-decoration: none;">imec-school.com</a></p>
+            <p><b style="color: #1D2943;">IMEC Team</b><br>
+            <a href="https://imec-school.com" style="color: #1D2943; text-decoration: none;">imec-school.com</a></p>
           </div>
-          <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 12px;">
+          <div style="background: #1D2943; color: white; padding: 20px; text-align: center; font-size: 12px;">
             <p>This is an automated response. Please do not reply to this email.</p>
             <p>&copy; ${new Date().getFullYear()} IMEC School. All rights reserved.</p>
           </div>
