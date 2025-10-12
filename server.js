@@ -199,14 +199,14 @@ Sent from IMEC School website
             <p>Thank you for reaching out and for your interest in our <b style="color: #2b5dff;">${interest}</b> program.</p>
             <p>Here we have provided more detailed information about ${interest} lesson.:</p>
             <div style="background: white; padding: 20px; border-radius: 5px; border-left: 4px solid #1D2943; margin: 15px 0;">
-              <p><strong>Trial lesson:</strong> Contact us to schedule your trial lesson</p>
-              <p><strong>Individual Lessons:</strong> 8 lessons for 250 AZN</p>
-              <p><strong>Group Lessons:</strong> 8 lessons for 200 AZN</p>
-              <p><strong>Lesson Duration:</strong> 50 minutes per lesson</p>
-              <p><strong>Contact Us:</strong> <a href="tel:+994103192021" style="color: #1D2943; text-decoration: none;">+994103192021</a> Call or WhatsApp</p>
+              <p style="color: #000000;"><strong style="color: #1D2943;">Trial lesson:</strong> Contact us to schedule your trial lesson</p>
+              <p style="color: #000000;"><strong style="color: #1D2943;">Individual Lessons:</strong> 8 lessons for 250 AZN</p>
+              <p style="color: #000000;"><strong style="color: #1D2943;">Group Lessons:</strong> 8 lessons for 200 AZN</p>
+              <p style="color: #000000;"><strong style="color: #1D2943;">Lesson Duration:</strong> 50 minutes per lesson</p>
+              <p style="color: #000000;"><strong style="color: #1D2943;">Contact Us:</strong> <a href="tel:+994103192021" style="color: #1D2943; text-decoration: none;">+994103192021</a> Call or WhatsApp</p>
             </div>
             <br>
-            <p>Best regards,</p>
+            <p style="color: #000000;">Best regards,</p>
             <p><b style="color: #1D2943;">IMEC Team</b><br>
             <a href="https://imec-school.com" style="color: #1D2943; text-decoration: none;">imec-school.com</a></p>
           </div>
