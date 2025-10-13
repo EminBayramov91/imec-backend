@@ -122,7 +122,7 @@ app.get("/api/contact", (req, res) => {
 
 app.post("/api/contact", async (req, res) => {
   try {
-    const { name, email, phone, interest, message } = req.body;
+    const { name, email, phone, interest, message, language } = req.body;
 
     const v = validateBody({ name, email, phone, interest, message });
     if (!v.ok) {
@@ -132,6 +132,63 @@ app.post("/api/contact", async (req, res) => {
         field: v.field,
         message: v.message,
       });
+    }
+
+    let subject, greeting, body, closing;
+
+    switch (language) {
+      case "az":
+        subject = "IMEC ilə əlaqə saxladığınız üçün təşəkkürlər!";
+        greeting = `Hörmətli <b style="color: #2b5dff;">${name}</b>,`;
+        body = `
+      <p>Bizim <b style="color: #2b5dff;">${interest}</b> dərsimizə maraq göstərdiyiniz üçün təşəkkür edirik.</p>
+      <p>Aşağıda bu dərs haqqında daha ətraflı məlumat verilmişdir:</p>
+      <div style="background: white; padding: 20px; border-radius: 5px; border-left: 4px solid #1D2943; margin: 15px 0;">
+        <p><strong style="color: #1D2943;">Sınaq dərsi:</strong> Sınaq dərsinizi təyin etmək üçün bizimlə əlaqə saxlayın.</p>
+        <p><strong style="color: #1D2943;">Fərdi dərslər:</strong> 8 dərs — 250 AZN</p>
+        <p><strong style="color: #1D2943;">Qrup dərsləri:</strong> 8 dərs — 200 AZN</p>
+        <p><strong style="color: #1D2943;">Dərsin müddəti:</strong> Hər dərs 50 dəqiqə</p>
+        <p><strong style="color: #1D2943;">Əlaqə:</strong> <a href="tel:+994103192021" style="color: #1D2943;">+994103192021</a> (Zəng və ya WhatsApp)</p>
+      </div>`;
+        closing = `
+      <p>Hörmətlə,<br><b style="color: #1D2943;">IMEC komandası</b><br>
+      <a href="https://imec-school.com" style="color: #1D2943;">imec-school.com</a></p>`;
+        break;
+
+      case "ru":
+        subject = "Спасибо за обращение в IMEC!";
+        greeting = `Уважаемый(ая) <b style="color: #2b5dff;">${name}</b>,`;
+        body = `
+      <p>Спасибо за ваш интерес к нашему курсу <b style="color: #2b5dff;">${interest}</b>.</p>
+      <p>Вот подробная информация о занятиях:</p>
+      <div style="background: white; padding: 20px; border-radius: 5px; border-left: 4px solid #1D2943; margin: 15px 0;">
+        <p><strong style="color: #1D2943;">Пробное занятие:</strong> Свяжитесь с нами, чтобы записаться на пробный урок.</p>
+        <p><strong style="color: #1D2943;">Индивидуальные занятия:</strong> 8 уроков — 250 AZN</p>
+        <p><strong style="color: #1D2943;">Групповые занятия:</strong> 8 уроков — 200 AZN</p>
+        <p><strong style="color: #1D2943;">Длительность занятия:</strong> 50 минут</p>
+        <p><strong style="color: #1D2943;">Контакты:</strong> <a href="tel:+994103192021" style="color: #1D2943;">+994103192021</a> (Звонок или WhatsApp)</p>
+      </div>`;
+        closing = `
+      <p>С уважением,<br><b style="color: #1D2943;">Команда IMEC</b><br>
+      <a href="https://imec-school.com" style="color: #1D2943;">imec-school.com</a></p>`;
+        break;
+
+      default: // English
+        subject = "Thank you for contacting IMEC!";
+        greeting = `Dear <b style="color: #2b5dff;">${name}</b>,`;
+        body = `
+      <p>Thank you for your interest in our <b style="color: #2b5dff;">${interest}</b> program.</p>
+      <p>Here is some more detailed information:</p>
+      <div style="background: white; padding: 20px; border-radius: 5px; border-left: 4px solid #1D2943; margin: 15px 0;">
+        <p><strong style="color: #1D2943;">Trial Lesson:</strong> Contact us to schedule your trial lesson.</p>
+        <p><strong style="color: #1D2943;">Individual Lessons:</strong> 8 lessons — 250 AZN</p>
+        <p><strong style="color: #1D2943;">Group Lessons:</strong> 8 lessons — 200 AZN</p>
+        <p><strong style="color: #1D2943;">Lesson Duration:</strong> 50 minutes per lesson</p>
+        <p><strong style="color: #1D2943;">Contact Us:</strong> <a href="tel:+994103192021" style="color: #1D2943;">+994103192021</a> (Call or WhatsApp)</p>
+      </div>`;
+        closing = `
+      <p>Best regards,<br><b style="color: #1D2943;">IMEC Team</b><br>
+      <a href="https://imec-school.com" style="color: #1D2943;">imec-school.com</a></p>`;
     }
 
     const html = `
@@ -162,9 +219,7 @@ Name: ${name}
 Email: ${email}
 Phone: ${phone}
 Interest: ${interest}
-
-Message:
-${message}
+Message: ${message}
 
 ---
 Sent from IMEC School website
@@ -187,35 +242,24 @@ Sent from IMEC School website
     const autoReplyOptions = {
       from: `"IMEC" <${process.env.SMTP_FROM || process.env.SMTP_USER || "no-reply@imec-school.com"}>`,
       to: email,
-      subject: "Thank you for contacting IMEC!",
+      subject: subject,
       html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: 0 auto;">
-          <div style="background: #1D2943; padding: 30px; text-align: center; color: white;">
-            <h1 style="margin: 0; font-size: 28px;">Thank You!</h1>
-            <p style="margin: 10px 0 0; font-size: 16px; opacity: 0.9;">We have received your message</p>
-          </div>
-          <div style="padding: 30px; background: #f9f9f9; color: #000000;">
-            <p>Dear <b style="color: #2b5dff;">${name}</b>,</p>
-            <p>Thank you for reaching out and for your interest in our <b style="color: #2b5dff;">${interest}</b> program.</p>
-            <p>Here we have provided more detailed information about ${interest} lesson.:</p>
-            <div style="background: white; padding: 20px; border-radius: 5px; border-left: 4px solid #1D2943; margin: 15px 0;">
-              <p style="color: #000000;"><strong style="color: #1D2943;">Trial lesson:</strong> Contact us to schedule your trial lesson</p>
-              <p style="color: #000000;"><strong style="color: #1D2943;">Individual Lessons:</strong> 8 lessons for 250 AZN</p>
-              <p style="color: #000000;"><strong style="color: #1D2943;">Group Lessons:</strong> 8 lessons for 200 AZN</p>
-              <p style="color: #000000;"><strong style="color: #1D2943;">Lesson Duration:</strong> 50 minutes per lesson</p>
-              <p style="color: #000000;"><strong style="color: #1D2943;">Contact Us:</strong> <a href="tel:+994103192021" style="color: #1D2943; text-decoration: none;">+994103192021</a> Call or WhatsApp</p>
-            </div>
-            <br>
-            <p style="color: #000000;">Best regards,</p>
-            <p><b style="color: #1D2943;">IMEC Team</b><br>
-            <a href="https://imec-school.com" style="color: #1D2943; text-decoration: none;">imec-school.com</a></p>
-          </div>
-          <div style="background: #1D2943; color: white; padding: 20px; text-align: center; font-size: 12px;">
-            <p>This is an automated response. Please do not reply to this email.</p>
-            <p>&copy; ${new Date().getFullYear()} IMEC School. All rights reserved.</p>
-          </div>
-        </div>
-      `,
+  <div style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: 0 auto;">
+    <div style="background: #1D2943; padding: 30px; text-align: center; color: white;">
+      <h1 style="margin: 0; font-size: 28px;">IMEC</h1>
+      <p style="margin: 10px 0 0; font-size: 16px; opacity: 0.9;">${subject}</p>
+    </div>
+    <div style="padding: 30px; background: #f9f9f9; color: #000000;">
+      ${greeting}
+      ${body}
+      ${closing}
+    </div>
+    <div style="background: #1D2943; color: white; padding: 20px; text-align: center; font-size: 12px;">
+      <p>This is an automated response. Please do not reply.</p>
+      <p>&copy; ${new Date().getFullYear()} IMEC School. All rights reserved.</p>
+    </div>
+  </div>
+`,
     };
 
     const autoReplyInfo = await transporter.sendMail(autoReplyOptions);
